@@ -6,7 +6,7 @@ Basit bir telefon rehberi uygulaması
 Projemiz aşağıdaki bileşenler'den oluşacak.
 
 * STR.Data : Projenin veritabanını oluşturacak migration projesi 
-* STR.Api.Contacts : Kişi ve iletişim bilgileri ile ilgili CRUD api servisi olacak
+* STR.Api.PhoneBook : Kişi ve iletişim bilgileri ile ilgili CRUD api servisi olacak
 * STR.Api.Reports : Raporlama işlemleri ile ilgili CRUD api servisi olacak
 * STR.Reporting : raporların kuyruğa alınması ve hazırlanması için RabbitMQ kullanılacak.
 * STR.Tests : unit testler için xUnit test projesi kullanılacak.
@@ -25,11 +25,11 @@ PS içinde STR.Data dosyasına gelerek
 "dotnet ef migrations add initMigration" migrasyon dosyası oluşturulur.
 "dotnet ef database update" database oluşturulur.
 
-## Api.PhoneBook
+## STR.Api.PhoneBook
 
 Person,Contract CRUD işlemlerini yapmak üzre eklenen Api projesidir.
 
-## Api.Reports
+## STR.Api.Reports
 
 Rapor Talep ve Sonucu ile ilgili CRUD işlmeleri için eklenen Api projesidir.
 
