@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using STR.Api.Report.Infra;
 using STR.Api.Report.Interfaces;
 using STR.Api.Report.Models;
 using STR.Data.Models;
@@ -49,6 +50,9 @@ namespace STR.Api.Report.Providers
 
                 dbContext.ReportRequest.Add(reportRequest);
                 await dbContext.SaveChangesAsync();
+
+                RabbitMQProducer rabbitMQProducer = new RabbitMQProducer();
+                await rabbitMQProducer.PostAsync(reportRequest);
 
                 return (true, "Added Report");
             }
