@@ -15,12 +15,23 @@ namespace STR.Api.PhoneBook.Providers
     {
         private readonly STRDbContext dbContext;
         private readonly ILogger<ContactsProvider> logger;
-        private readonly IMapper mapper;
-        public ContactsProvider(STRDbContext dbContext, ILogger<ContactsProvider> logger, IMapper mapper)
+        private readonly IMapper mapperContactDb2VM;
+        private readonly IMapper mapperContactVM2Db;
+
+        public ContactsProvider(STRDbContext dbContext, ILogger<ContactsProvider> logger)
         {
             this.dbContext = dbContext;
             this.logger = logger;
-            this.mapper = mapper;
+
+            mapperContactDb2VM = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Data.Models.Ef.Contact, Contact>();
+            }).CreateMapper();
+
+            mapperContactVM2Db = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Contact, Data.Models.Ef.Contact>();
+            }).CreateMapper();
 
 
         }
@@ -29,7 +40,7 @@ namespace STR.Api.PhoneBook.Providers
         {
             try
             {
-                Data.Models.Ef.Contact contact = mapper.Map<Contact, Data.Models.Ef.Contact>(model);
+                Data.Models.Ef.Contact contact = mapperContactVM2Db.Map<Contact, Data.Models.Ef.Contact>(model);
 
                 contact.Id = Guid.NewGuid();
                 contact.CreatedTime = DateTime.Now;
@@ -58,6 +69,8 @@ namespace STR.Api.PhoneBook.Providers
                     return (false, "Not Found");
 
                 dbContext.Contact.Remove(contact);
+
+                await dbContext.SaveChangesAsync();
 
                 return (true, "Deleted Contact");
 

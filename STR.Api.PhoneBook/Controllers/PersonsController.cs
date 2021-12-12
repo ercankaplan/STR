@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using STR.Api.PhoneBook.Interfaces;
 using STR.Api.PhoneBook.Models;
@@ -21,6 +22,7 @@ namespace STR.Api.PhoneBook.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> AddPersonAsync(Person model)
         {
             if (!ModelState.IsValid)
@@ -40,6 +42,7 @@ namespace STR.Api.PhoneBook.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetPersonsAsync()
         {
             var result = await mPersonsProvider.GetPersonsAsync();

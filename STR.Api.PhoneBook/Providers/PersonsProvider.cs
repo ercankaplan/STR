@@ -16,33 +16,55 @@ namespace STR.Api.PhoneBook.Providers
 
         private readonly STRDbContext dbContext;
         private readonly ILogger<PersonsProvider> logger;
-        private readonly IMapper mapper;
-        public PersonsProvider(STRDbContext dbContext, ILogger<PersonsProvider> logger, IMapper mapper)
+        private readonly IMapper mapperContactDb2VM;
+        private readonly IMapper mapperContactVM2Db;
+        private readonly IMapper mapperPersonDb2VM;
+        private readonly IMapper mapperPersonVM2Db;
+        public PersonsProvider(STRDbContext dbContext, ILogger<PersonsProvider> logger)
         {
             this.dbContext = dbContext;
             this.logger = logger;
-            this.mapper = mapper;
+
+            mapperContactDb2VM = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Data.Models.Ef.Contact, Contact>();
+            }).CreateMapper();
+
+            mapperContactVM2Db = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Contact, Data.Models.Ef.Contact>();
+            }).CreateMapper();
 
 
+            this.mapperPersonDb2VM = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Data.Models.Ef.Person, Person>()
+                 .ForMember(dest => dest.Contacts, opt => opt.MapFrom(src => mapperContactDb2VM.Map<List<Data.Models.Ef.Contact>, List<Contact>>(src.Contacts.ToList())));
+            }).CreateMapper();
+
+            this.mapperPersonVM2Db = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Person, Data.Models.Ef.Person>()
+                 .ForMember(dest => dest.Contacts, opt => opt.MapFrom(src => mapperContactVM2Db.Map<List<Contact>, List<Data.Models.Ef.Contact>>(src.Contacts.ToList())));
+            }).CreateMapper();
         }
 
-        public  async Task<(bool IsSuccess, string Error)> AddPersonAsync(Person model)
+        public async Task<(bool IsSuccess, string Error)> AddPersonAsync(Person model)
         {
             try
             {
-                Data.Models.Ef.Person person = mapper.Map<Person, Data.Models.Ef.Person>(model);
+                Data.Models.Ef.Person person = mapperPersonVM2Db.Map<Person, Data.Models.Ef.Person>(model);
 
                 person.CreatedTime = DateTime.Now;
                 person.Id = Guid.NewGuid();
-  
+
                 dbContext.Person.Add(person);
-               
 
-                if (model.Contacts.Any())
+
+                if (person.Contacts != null && person.Contacts.Any())
                 {
-                    ICollection<Data.Models.Ef.Contact> contacts = mapper.Map<ICollection<Contact>, ICollection<Data.Models.Ef.Contact>>(model.Contacts);
 
-                    foreach (var contact in contacts.ToList())
+                    foreach (var contact in person.Contacts.ToList())
                     {
                         contact.Id = Guid.NewGuid();
                         contact.PersonId = person.Id;
@@ -50,7 +72,7 @@ namespace STR.Api.PhoneBook.Providers
 
                         dbContext.Contact.Add(contact);
                     }
-                    
+
                 }
 
                 await dbContext.SaveChangesAsync();
@@ -76,6 +98,8 @@ namespace STR.Api.PhoneBook.Providers
 
                 dbContext.Person.Remove(person);
 
+                await dbContext.SaveChangesAsync();
+
                 return (true, "Deleted Person");
 
             }
@@ -91,13 +115,15 @@ namespace STR.Api.PhoneBook.Providers
         {
             try
             {
-                var person = await dbContext.Person.Where(x => x.Id == id).FirstOrDefaultAsync();
+                var person = await dbContext.Person.Where(x => x.Id == id)
+                                                    .Include(o => o.Contacts)
+                                                    .FirstOrDefaultAsync();
 
                 if (person != null)
                 {
-                    logger?.LogInformation("ReportRequest Found");
+                    logger?.LogInformation("Person Found");
 
-                    Person result = mapper.Map<Data.Models.Ef.Person, Person>(person);
+                    Person result = mapperPersonDb2VM.Map<Data.Models.Ef.Person, Person>(person);
                     return (true, result, null);
                 }
 
@@ -121,7 +147,7 @@ namespace STR.Api.PhoneBook.Providers
                 {
                     logger?.LogInformation("Persons Found");
 
-                    var result = mapper.Map<List<Data.Models.Ef.Person>, List<Person>>(persons);
+                    var result = mapperPersonDb2VM.Map<List<Data.Models.Ef.Person>, List<Person>>(persons);
 
                     return (true, result, null);
 
