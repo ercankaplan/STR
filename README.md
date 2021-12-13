@@ -63,4 +63,10 @@ Newtonsoft.Json yükledik nuget paketleri yüklenerek RabbitServer'a erişilmekt
 
 ## STR.Test
 
+Api Providerları için xUnitTest projesi eklendi.
+DbContext in mock lanması için Moq nuget paketi eklendi.
+ancak
+<a href="https://docs.microsoft.com/en-us/ef/core/testing/#unit-testing" rel="nofollow">Microsoft does not recommend mocking a db context</a>
+bu nedenle  DatabaseInMemory ile Fact ler eklendi.
+Bunun için Microsoft.EntityFrameworkCore.InMemory nugetpaketi eklendi.
 
