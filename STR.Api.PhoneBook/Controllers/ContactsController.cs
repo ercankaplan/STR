@@ -21,24 +21,24 @@ namespace STR.Api.PhoneBook.Controllers
             mContactsProvider = contactProvider;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AddContactAsync(Contact model)
+        [HttpPost("Contacts")]
+        public async Task<IActionResult> AddContactAsync([FromBody] Contact model)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Invalid Model");
 
             var result = await mContactsProvider.AddContactAsync(model);
 
-            return Ok(result.IsSuccess);
+            return Ok(result);
 
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("Contacts/{id}")]
         public async Task<IActionResult> DeleteContactAsync(Guid id)
         {
             var result = await mContactsProvider.DeleteContactAsync(id);
 
-            return Ok(result.IsSuccess);
+            return Ok(result);
 
         }
     }
