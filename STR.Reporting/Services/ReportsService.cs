@@ -37,11 +37,28 @@ namespace STR.Reporting.Services
 
                 //TODO execute sp get result 
 
+                Report report = dbContext.Report.Where(x => x.Id == reportRequest.ReportId).SingleOrDefault();
+
+                string result = "Dummy Result";
+
+                if (report != null)
+                {
+                    if (report.Name == "PERSON_COUNT")
+                    {
+                        result = $"PERSON_COUNT:{dbContext.Person.Count()}";
+                    }
+                    else if (report.Name == "PHONE_NUMBER_COUNT")
+                    {
+                        result = $"PHONE_NUMBER_COUNT:{dbContext.Contact.Where(o=> o.ContactType == (byte)EnumContactType.Phone).Count()}";
+                    }
+                }
+
+
                 ReportResult reportResult = new ReportResult()
                 {
                     Id = Guid.NewGuid(),
                     ReportRequestId = reportRequest.Id,
-                    Result = "Dummy Result",
+                    Result = result,
                     CreatedTime = DateTime.Now
                 };
 
