@@ -21,45 +21,45 @@ namespace STR.Api.PhoneBook.Controllers
             mPersonsProvider = personProvider;
         }
 
-        [HttpPost]
+        [HttpPost("Persons")]
         [AllowAnonymous]
-        public async Task<IActionResult> AddPersonAsync(Person model)
+        public async Task<IActionResult> AddPersonAsync([FromBody]Person model)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Invalid Model");
 
             var result = await mPersonsProvider.AddPersonAsync(model);
 
-            return Ok(result.IsSuccess);
+            return Ok(result);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("Persons/{id}")]
         public async Task<IActionResult> DeletePersonAsync(Guid id)
         {
             var result = await mPersonsProvider.DeletePersonAsync(id);
 
-            return Ok(result.IsSuccess);
+            return Ok(result);
         }
 
-        [HttpGet]
+        [HttpGet("Persons")]
         [AllowAnonymous]
         public async Task<IActionResult> GetPersonsAsync()
         {
             var result = await mPersonsProvider.GetPersonsAsync();
 
-            if (result.IsSuccess)
-                return Ok(result.Persons);
+            if (result!=null)
+                return Ok(result);
 
             return NotFound();
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("Persons/{id}")]
         public async Task<IActionResult> GetPersonAsync(Guid id)
         {
             var result = await mPersonsProvider.GetPersonAsync(id);
 
-            if (result.IsSuccess)
-                return Ok(result.Person);
+            if (result!=null)
+                return Ok(result);
 
             return NotFound();
         }

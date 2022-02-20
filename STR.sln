@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "STR.Test", "STR.Test\STR.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "STR.APIGateway", "STR.APIGateway\STR.APIGateway.csproj", "{1717737D-5184-4F7E-BA49-13A3068E83A4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STR.Test", "STR.Test\STR.Test.csproj", "{D30537B6-E887-41C9-94D4-4AC3BD1AB7DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

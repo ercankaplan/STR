@@ -49,10 +49,14 @@ namespace STR.Api.PhoneBook.Providers
             }).CreateMapper();
         }
 
-        public async Task<(bool IsSuccess, string Error)> AddPersonAsync(Person model)
+        public async Task<bool> AddPersonAsync(Person model)
         {
             try
             {
+
+                if (dbContext.Person.Where(x => x.Name == model.Name && x.Surname == model.Surname).Any())
+                    throw new ApplicationException("Person is already exists");
+
                 Data.Models.Ef.Person person = mapperPersonVM2Db.Map<Person, Data.Models.Ef.Person>(model);
 
                 person.CreatedTime = DateTime.Now;
@@ -77,41 +81,41 @@ namespace STR.Api.PhoneBook.Providers
 
                 await dbContext.SaveChangesAsync();
 
-                return (true, "Added Person");
+                return true;
             }
             catch (Exception ex)
             {
 
                 logger?.LogError(ex.StackTrace);
-                return (false, ex.Message);
+                return false;
             }
         }
 
-        public async Task<(bool IsSuccess, string Error)> DeletePersonAsync(Guid id)
+        public async Task<bool> DeletePersonAsync(Guid id)
         {
             try
             {
                 Data.Models.Ef.Person person = await dbContext.Person.Where(o => o.Id == id).FirstOrDefaultAsync();
 
                 if (person == null)
-                    return (false, "Not Found");
+                    return false;
 
                 dbContext.Person.Remove(person);
 
                 await dbContext.SaveChangesAsync();
 
-                return (true, "Deleted Person");
+                return true;
 
             }
             catch (Exception ex)
             {
 
                 logger?.LogError(ex.StackTrace);
-                return (false, ex.Message);
+                return false;
             }
         }
 
-        public async Task<(bool IsSuccess, Person Person, string Error)> GetPersonAsync(Guid id)
+        public async Task<Person> GetPersonAsync(Guid id)
         {
             try
             {
@@ -124,20 +128,20 @@ namespace STR.Api.PhoneBook.Providers
                     logger?.LogInformation("Person Found");
 
                     Person result = mapperPersonDb2VM.Map<Data.Models.Ef.Person, Person>(person);
-                    return (true, result, null);
+                    return result;
                 }
 
-                return (false, null, "Not Found");
+                return null;
             }
             catch (Exception ex)
             {
 
                 logger?.LogError(ex.StackTrace);
-                return (false, null, ex.Message);
+                return null;
             }
         }
 
-        public async Task<(bool IsSuccess, IEnumerable<Person> Persons, string Error)> GetPersonsAsync()
+        public async Task<IEnumerable<Person>> GetPersonsAsync()
         {
             try
             {
@@ -149,16 +153,16 @@ namespace STR.Api.PhoneBook.Providers
 
                     var result = mapperPersonDb2VM.Map<List<Data.Models.Ef.Person>, List<Person>>(persons);
 
-                    return (true, result, null);
+                    return  result;
 
                 }
 
-                return (false, null, "Not Found");
+                return new List<Person>();
             }
             catch (Exception ex)
             {
                 logger?.LogError(ex.StackTrace);
-                return (false, null, ex.Message);
+                return new List<Person>();
             }
         }
     }

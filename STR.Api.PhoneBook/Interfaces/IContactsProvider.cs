@@ -14,14 +14,14 @@ namespace STR.Api.PhoneBook.Interfaces
         /// </summary>
         /// <param name="person"></param>
         /// <returns></returns>
-        Task<(bool IsSuccess, string Error)> AddContactAsync(Contact model);
+        Task<bool> AddContactAsync(Contact model);
 
         /// <summary>
         /// Rehberdeki kişiden iletişim bilgisi kaldırma
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task<(bool IsSuccess, string Error)> DeleteContactAsync(Guid id);
+        Task<bool> DeleteContactAsync(Guid id);
 
       
     }

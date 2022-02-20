@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using STR.Api.Report.Infra;
 using STR.Api.Report.Interfaces;
 using STR.Api.Report.Models;
 using STR.Data.Models;
@@ -17,12 +18,23 @@ namespace STR.Api.Report.Providers
 
         private readonly STRDbContext dbContext;
         private readonly ILogger<ReportsProvider> logger;
-        private readonly IMapper mapper;
-        public ReportsProvider(STRDbContext dbContext, ILogger<ReportsProvider> logger, IMapper mapper)
+
+        private readonly IMapper mapperReportRequestDb2VM;
+        private readonly IMapper mapperReportRequestVM2Db;
+        public ReportsProvider(STRDbContext dbContext, ILogger<ReportsProvider> logger)
         {
             this.dbContext = dbContext;
             this.logger = logger;
-            this.mapper = mapper;
+
+            mapperReportRequestDb2VM = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Data.Models.Ef.ReportRequest, ReportRequest>();
+            }).CreateMapper();
+
+            mapperReportRequestVM2Db = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<ReportRequest, Data.Models.Ef.ReportRequest>();
+            }).CreateMapper();
 
 
         }
@@ -30,7 +42,7 @@ namespace STR.Api.Report.Providers
         {
             try
             {
-                Data.Models.Ef.ReportRequest reportRequest = mapper.Map<ReportRequest, Data.Models.Ef.ReportRequest>(model);
+                Data.Models.Ef.ReportRequest reportRequest = mapperReportRequestVM2Db.Map<ReportRequest, Data.Models.Ef.ReportRequest>(model);
 
                 reportRequest.CreatedTime = DateTime.Now;
                 reportRequest.Id = Guid.NewGuid();
@@ -38,6 +50,9 @@ namespace STR.Api.Report.Providers
 
                 dbContext.ReportRequest.Add(reportRequest);
                 await dbContext.SaveChangesAsync();
+
+                RabbitMQProducer rabbitMQProducer = new RabbitMQProducer();
+                await rabbitMQProducer.PostAsync(reportRequest);
 
                 return (true, "Added Report");
             }
@@ -53,13 +68,13 @@ namespace STR.Api.Report.Providers
         {
             try
             {
-                var reportRequest = await dbContext.ReportRequest.Where(x => x.Id == id).FirstOrDefaultAsync();
+                var reportRequest = await dbContext.ReportRequest.Where(x => x.Id == id).Include(o=> o.ReportResult).FirstOrDefaultAsync();
 
                 if (reportRequest != null)
                 {
                     logger?.LogInformation("ReportRequest Found");
 
-                    ReportRequest result = mapper.Map<Data.Models.Ef.ReportRequest, ReportRequest>(reportRequest);
+                    ReportRequest result = mapperReportRequestDb2VM.Map<Data.Models.Ef.ReportRequest, ReportRequest>(reportRequest);
                     return (true, result, null);
                 }
 
@@ -83,7 +98,7 @@ namespace STR.Api.Report.Providers
                 {
                     logger?.LogInformation("ReportRequests Found");
 
-                    var result = mapper.Map<List<Data.Models.Ef.ReportRequest>, List<ReportRequest>>(reportRequests);
+                    var result = mapperReportRequestDb2VM.Map<List<Data.Models.Ef.ReportRequest>, List<ReportRequest>>(reportRequests);
 
                     return (true, result, null);
 

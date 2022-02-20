@@ -33,7 +33,7 @@ namespace STR.Api.Report.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPersonsAsync()
+        public async Task<IActionResult> GetReportRequestsAsync()
         {
             var result = await mReportsProvider.GetReportRequestsAsync();
 

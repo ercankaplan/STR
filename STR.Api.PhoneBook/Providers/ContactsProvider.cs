@@ -36,50 +36,58 @@ namespace STR.Api.PhoneBook.Providers
 
         }
 
-        public async Task<(bool IsSuccess, string Error)> AddContactAsync(Contact model)
+        public async Task<bool> AddContactAsync(Contact model)
         {
             try
             {
                 Data.Models.Ef.Contact contact = mapperContactVM2Db.Map<Contact, Data.Models.Ef.Contact>(model);
 
-                contact.Id = Guid.NewGuid();
+                if (contact.Id == Guid.Empty)
+                    contact.Id = Guid.NewGuid();
+
                 contact.CreatedTime = DateTime.Now;
+
+                if (!dbContext.Person.Where(o => o.Id == contact.PersonId).Any())
+                    throw new ApplicationException("Person not found");
+
+                if (dbContext.Contact.Where(o => o.ContactInfo == contact.ContactInfo && o.ContactType == contact.ContactType).Any())
+                    throw new ApplicationException("Contact alredy exists");
 
                 dbContext.Contact.Add(contact);
 
                 await dbContext.SaveChangesAsync();
 
-                return (true, "Added Contact");
+                return true;
             }
             catch (Exception ex)
             {
 
                 logger?.LogError(ex.StackTrace);
-                return (false, ex.Message);
+                return false;
             }
         }
 
-        public async Task<(bool IsSuccess, string Error)> DeleteContactAsync(Guid id)
+        public async Task<bool> DeleteContactAsync(Guid id)
         {
             try
             {
                 Data.Models.Ef.Contact contact = await dbContext.Contact.Where(o => o.Id == id).FirstOrDefaultAsync();
 
                 if (contact == null)
-                    return (false, "Not Found");
+                    throw new ApplicationException("Contact not found");
 
                 dbContext.Contact.Remove(contact);
 
                 await dbContext.SaveChangesAsync();
 
-                return (true, "Deleted Contact");
+                return true;
 
             }
             catch (Exception ex)
             {
 
                 logger?.LogError(ex.StackTrace);
-                return (false, ex.Message);
+                return false;
             }
         }
     }
