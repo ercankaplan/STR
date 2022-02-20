@@ -70,3 +70,17 @@ ancak
 bu nedenle  DatabaseInMemory ile devam edildi.
 Bunun için Microsoft.EntityFrameworkCore.InMemory nugetpaketi eklendi.
 
+
+## STR.APIGateway
+
+https://ocelot.readthedocs.io/en/latest/introduction/gettingstarted.html
+
+The following is a very basic ocelot.json. It won’t do anything but should get Ocelot starting.
+
+{
+    "Routes": [],
+    "GlobalConfiguration": {
+        "BaseUrl": ""
+    }
+}
+
